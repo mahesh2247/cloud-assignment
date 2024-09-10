@@ -14,19 +14,16 @@ def lambda_handler(event, context):
         for record in records:
             s3_bucket = record['s3']['bucket']['name']
             s3_key = record['s3']['object']['key']
-            
-            # Check if the file is in the 'images/' folder
+ 
             if s3_key.startswith('images/'):
-                # Download the image
                 response = s3.get_object(Bucket=s3_bucket, Key=s3_key)
                 image_content = response['Body'].read()
-                
-                # Open the image
+
                 image = Image.open(io.BytesIO(image_content))
                 
-                # Create a thumbnail
+
                 thumbnail = image.copy()
-                thumbnail.thumbnail((100, 100))  # Adjust the size as needed
+                thumbnail.thumbnail((100, 100)) 
                 
                 thumbnail_io = io.BytesIO()
                 thumbnail.save(thumbnail_io, format='JPEG')
