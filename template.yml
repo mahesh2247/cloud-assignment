@@ -1,0 +1,128 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  montycloud-assignmentapp
+
+  Sample SAM Template for uploading images and creating thumbnails
+
+Globals:
+  Api:
+    BinaryMediaTypes:
+      - "multipart/form-data"
+      - "image/jpeg"
+      - "image/png"
+      - "image/jpg"
+      - "application/json"
+  Function:
+    Timeout: 10
+    LoggingConfig:
+      LogFormat: JSON
+
+Resources:
+  ImageUploadFunction:
+    Type: AWS::Serverless::Function
+    Properties: 
+      Handler: app.lambda_handler
+      CodeUri: ./src
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref ImageBucket
+      Policies:
+        - S3WritePolicy:
+            BucketName: !Ref ImageBucket
+      Events:
+        ApiGatewayUpload:
+          Type: Api
+          Properties:
+            Path: /upload
+            Method: POST
+
+  ThumbnailFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: thumbnail.lambda_handler
+      CodeUri: ./src
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 60
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref ImageBucket
+      Role: !GetAtt ThumbnailFunctionRole.Arn
+
+
+  S3EventBridgeRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Capture S3 PutObject events for the images/ folder"
+      EventPattern:
+        source:
+          - "aws.s3"
+        detail-type:
+          - "AWS API Call via CloudTrail"
+        detail:
+          eventName:
+            - "PutObject"
+          requestParameters:
+            bucketName:
+              - !Ref ImageBucket
+            key:
+              - prefix: "images/"
+      Targets:
+        - Arn: !GetAtt ThumbnailFunction.Arn
+          Id: "ThumbnailFunctionTarget"
+      State: "ENABLED"
+
+  ThumbnailFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: ThumbnailFunctionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub "arn:aws:s3:::${ImageBucket}/*"
+
+  BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref ImageBucket
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: s3:PutObject
+            Resource: !Sub "arn:aws:s3:::${ImageBucket}/thumbnail/*"
+
+  ImageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      LifecycleConfiguration:
+        Rules:
+          - Status: Enabled
+            Prefix: "images/"
+            ExpirationInDays: 365
+          - Status: Enabled
+            Prefix: "thumbnail/"
+            ExpirationInDays: 365
+
+Outputs:
+  ImageUploadApi:
+    Description: "API Gateway endpoint to upload images"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/upload"
