@@ -108,6 +108,31 @@ Resources:
     Metadata:
       BuildMethod: python3.12
 
+  FileDownloadFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./src
+      Handler: download.lambda_handler
+      Runtime: python3.12
+      MemorySize: 128
+      Timeout: 30
+      Environment:
+        Variables:
+          BUCKET_NAME: !Sub "${BucketNamePrefix}-${Stage}"
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+              Resource:
+                - !Sub arn:aws:s3:::${BucketNamePrefix}-${Stage}/images/*
+      Events:
+        ApiGatewayDownload:
+          Type: Api
+          Properties:
+            Path: /download/{file_name}
+            Method: GET
+
   ImageBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -118,6 +143,7 @@ Resources:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
               SSEAlgorithm: AES256
+    DeletionPolicy: Delete
 
   BucketPolicy1:
     Type: AWS::S3::BucketPolicy
@@ -140,6 +166,10 @@ Outputs:
   ImageUploadApi:
     Description: "API Gateway endpoint to upload images"
     Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/upload"
+
+  FileDownloadApi:
+    Description: "API Gateway endpoint to download images"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/download/{file_name}"
 
   S3BucketName:
     Description: "Name of the S3 bucket"
