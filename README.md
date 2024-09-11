@@ -34,7 +34,7 @@ The first command will build the source of your application. The second command 
 
 After running the above commands you will get a API endpoint 
 
-## To Run your application on Postman
+## Test your application on Postman
 
 * Copy the API Gateway link with key `ImageUploadApi` recieved after succesfully deploying SAM
 * Open Postman , enter the API Gateway URL in the URL box , choose the POST Method
