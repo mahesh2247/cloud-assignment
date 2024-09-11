@@ -8,7 +8,6 @@ s3 = boto3.client('s3')
 
 def lambda_handler(event, context):
     try:
-        # print(event)
         records = event.get('Records', [])
         for record in records:
             s3_bucket = record['s3']['bucket']['name']
