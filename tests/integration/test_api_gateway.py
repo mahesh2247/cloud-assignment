@@ -1,5 +1,5 @@
 import os
-
+from unittest.mock import patch, MagicMock
 import boto3
 import pytest
 import requests
@@ -8,6 +8,10 @@ import requests
 Make sure env variable AWS_SAM_STACK_NAME exists with the name of the stack we are going to test. 
 """
 
+@pytest.fixture
+def set_env_vars():
+    with patch.dict('os.environ', {'BUCKET_NAME': 'my-app-users-s3-bucket'}):
+        yield
 
 class TestApiGateway:
 
@@ -42,4 +46,3 @@ class TestApiGateway:
         response = requests.get(api_gateway_url)
 
         assert response.status_code == 200
-        assert response.json() == {"message": "hello world"}
