@@ -1,14 +1,17 @@
 import json
-
 import pytest
+import os
+from src import app
+from unittest.mock import patch
 
-from hello_world import app
-
+@pytest.fixture(scope='module', autouse=True)
+def set_env_vars():
+    os.environ['AWS_SAM_STACK_NAME'] = 'montycloud-assignmentapp'
+    os.environ['BUCKET_NAME'] = 'my-app-users-s3-bucket-dev'
 
 @pytest.fixture()
 def apigw_event():
-    """ Generates API GW Event"""
-
+    """Generates API GW Event"""
     return {
         "body": '{ "test": "body"}',
         "resource": "/{proxy+}",
@@ -61,12 +64,12 @@ def apigw_event():
         "path": "/examplepath",
     }
 
-
 def test_lambda_handler(apigw_event):
+    with patch('src.app.s3.put_object') as mock_put_object:
+        mock_put_object.return_value = {}
+        ret = app.lambda_handler(apigw_event, "")
+        data = json.loads(ret["body"])
 
-    ret = app.lambda_handler(apigw_event, "")
-    data = json.loads(ret["body"])
-
-    assert ret["statusCode"] == 200
-    assert "message" in ret["body"]
-    assert data["message"] == "hello world"
+        assert ret["statusCode"] == 200
+        assert "message" in data
+        assert data["message"] == "Image uploaded successfully"
