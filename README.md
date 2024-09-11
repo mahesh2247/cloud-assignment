@@ -8,7 +8,7 @@ This project contains source code and supporting files for a serverless applicat
 It includes the following files and folders.
 
 ```
-montycloud-assignmentapp/
+assignmentapp/
 │
 ├── src/
 |    ├── layer
