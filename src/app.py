@@ -26,7 +26,9 @@ def lambda_handler(event, context):
         
         return {
             'statusCode': 200,
-            'body': json.dumps({'message': 'Image uploaded successfully'})
+            'body': json.dumps({
+                'message': 'Image uploaded successfully', 
+                'file_name': file_name})
         }
     except Exception as e:
         print(e) 
