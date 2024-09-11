@@ -5,11 +5,10 @@ from PIL import Image
 import io
 
 s3 = boto3.client('s3')
-BUCKET_NAME = os.environ['BUCKET_NAME']
 
 def lambda_handler(event, context):
     try:
-        # Parse the S3 event
+        # print(event)
         records = event.get('Records', [])
         for record in records:
             s3_bucket = record['s3']['bucket']['name']
