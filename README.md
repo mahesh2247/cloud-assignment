@@ -36,9 +36,12 @@ After running the above commands you will get a API endpoint
 
 ## To Run your application on Postman
 
-* Copy the API Gateway link recieved after succesfully deploying SAM
+* Copy the API Gateway link with key `ImageUploadApi` recieved after succesfully deploying SAM
 * Open Postman , enter the API Gateway URL in the URL box , choose the POST Method
 * Choose the 'Body' Tab below and select the binary option on the radio button
 * Choose any JPEG Image and click on Send
 * After processesing , you will see API response which contains JSON with the keys message <relevant_message> and file_name <random_uuid>.jpg
 * Check your S3 bucket from your Cloudformation stack and you will see antoher folder for thumbnail which is a thumbnail for the same image which was uploaded along with an image folder which will contain the image you just uploaded.
+* Copy the API Gateway link with key `FileDownloadApi` recieved when you first deployed SAM
+* In Postman , provide the `file_name` as seen on the s3 bucket or from the response obtained from the `ImageUploadApi` under `file_name`
+* Use the GET Method and click on Send. You should have now recieved the file on your local system.
