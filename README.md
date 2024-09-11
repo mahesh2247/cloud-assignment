@@ -7,6 +7,23 @@ This project contains source code and supporting files for a serverless applicat
 
 It includes the following files and folders.
 
+montycloud-assignmentapp/
+│
+├── src/
+|    ├── layer
+|      ├── pilllayer
+|        ├── requirements.txt
+│    ├── app.py
+│    ├── thumbnail.py
+│    └── download.py
+│
+├── tests/
+│   
+│ 
+│── samconfig.toml
+│
+└── template.yml
+
 - src - Code for the application's Lambda function.
 - template.yaml - A template that defines the application's AWS resources.
 
